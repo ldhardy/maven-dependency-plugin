@@ -31,7 +31,14 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.dependency.utils.DependencyUtil;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactFilterException;
+import org.apache.maven.shared.artifact.filter.collection.ArtifactIdFilter;
 import org.apache.maven.shared.artifact.filter.collection.ArtifactsFilter;
+import org.apache.maven.shared.artifact.filter.collection.ClassifierFilter;
+import org.apache.maven.shared.artifact.filter.collection.FilterArtifacts;
+import org.apache.maven.shared.artifact.filter.collection.GroupIdFilter;
+import org.apache.maven.shared.artifact.filter.collection.ScopeFilter;
+import org.apache.maven.shared.artifact.filter.collection.TypeFilter;
 import org.apache.maven.shared.artifact.filter.resolve.TransformableFilter;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
@@ -71,7 +78,7 @@ public class GoOfflineMojo extends AbstractResolveMojo {
                 }
             }
 
-        } catch (DependencyResolverException e) {
+        } catch (DependencyResolverException | ArtifactFilterException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -133,8 +140,9 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      *
      * @return set of resolved plugin artifacts.
      * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @throws ArtifactFilterException
      */
-    protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException {
+    protected Set<Artifact> resolvePluginArtifacts() throws DependencyResolverException, ArtifactFilterException {
 
         Set<Artifact> plugins = getProject().getPluginArtifacts();
         Set<Artifact> reports = getProject().getReportArtifacts();
@@ -143,6 +151,13 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         artifacts.addAll(reports);
         artifacts.addAll(plugins);
 
+        getLog().debug("Size of artifacts before filtering " + artifacts.size());
+
+        final FilterArtifacts filter = getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
+        getLog().debug("Size of artifacts after filtering " + artifacts.size());
+
         Set<DependableCoordinate> dependableCoordinates = artifacts.stream()
                 .map(this::createDependendableCoordinateFromArtifact)
                 .collect(Collectors.toSet());
@@ -150,6 +165,37 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         ProjectBuildingRequest buildingRequest = newResolvePluginProjectBuildingRequest();
 
         return resolveDependableCoordinate(buildingRequest, dependableCoordinates, "plugins");
+    }
+
+    protected FilterArtifacts getArtifactsFilter() {
+        final FilterArtifacts filter = new FilterArtifacts();
+
+        if (excludeReactor) {
+
+            filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
+        }
+
+        filter.addFilter(new ScopeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeScope),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeScope)));
+
+        filter.addFilter(new TypeFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeTypes),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeTypes)));
+
+        filter.addFilter(new ClassifierFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeClassifiers),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeClassifiers)));
+
+        filter.addFilter(new GroupIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeGroupIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeGroupIds)));
+
+        filter.addFilter(new ArtifactIdFilter(
+                DependencyUtil.cleanToBeTokenizedString(this.includeArtifactIds),
+                DependencyUtil.cleanToBeTokenizedString(this.excludeArtifactIds)));
+
+        return filter;
     }
 
     private DependableCoordinate createDependendableCoordinateFromArtifact(final Artifact artifact) {

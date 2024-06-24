@@ -94,7 +94,10 @@ under the License.
           <configuration>
             <excludeGroupIds>skip.this.groupid,skip.this.groupid.too</excludeGroupIds>
             <excludeArtifactIds>skip-this-artifact,skip-this-artifact-too</excludeArtifactIds>
-            <excludeScope>compile,system</excludeScope>
+            <!-- the maven-common-artifact-filters library does not support comma delimited
+            scope exclusions.  only one at a time.  the other filters support comma delimited lists-->
+            <!-- <excludeScope>compile,system</excludeScope> -->
+            <excludeScope>system</excludeScope>
             <excludeTypes>ear</excludeTypes>
             <excludeClassifiers>skipThisClassifier,skipThisClassifierToo</excludeClassifiers>
           </configuration>

@@ -34,6 +34,7 @@ assert !buildLog.contains( 'Resolving artifact skip.this.groupid.too' )
 // Did type excludes work?
 
 // Did classifier excludes work?
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-core:jar:skipThisClassifier' )
 
 
 return true
