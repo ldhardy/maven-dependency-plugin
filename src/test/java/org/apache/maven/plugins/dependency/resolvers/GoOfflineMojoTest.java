@@ -244,4 +244,162 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
         assertFalse(artifacts.contains(artifact2));
         assertTrue(artifacts.contains(artifact3));
     }
+
+    String GROUP_INCLUDE_PREFIX = "include.this.groupid";
+
+    String ARTIFACT_INCLUDE_PREFIX = "include-this-artifact";
+
+    String CLASSIFIER_INCLUDE_PREFIX = "includeThisClassifier";
+
+    public void test_includeGroupIds() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-gid-plugin-config.xml");
+
+        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
+        assertNotNull(subject);
+
+        Artifact artifact1 = new ArtifactStub();
+        artifact1.setGroupId(GROUP_INCLUDE_PREFIX);
+        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact1.setVersion(STUB_ARTIFACT_VERSION);
+
+        Artifact artifact2 = new ArtifactStub();
+        artifact2.setGroupId(GROUP_INCLUDE_PREFIX + ".too");
+        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact2.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+
+        Artifact artifact3 = new ArtifactStub();
+        artifact3.setGroupId("skip.me");
+        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact3.setVersion("1.0");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
+        artifacts.add(artifact3);
+
+        assertEquals(3, artifacts.size());
+        FilterArtifacts filter = subject.getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
+        assertEquals(2, artifacts.size());
+        assertFalse(artifacts.contains(artifact3));
+        assertTrue(artifacts.contains(artifact1));
+        assertTrue(artifacts.contains(artifact2));
+    }
+
+    public void test_includeArtifactIds() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-aid-plugin-config.xml");
+
+        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
+        assertNotNull(subject);
+
+        Artifact artifact1 = new ArtifactStub();
+        artifact1.setGroupId(VALID_GROUP);
+        artifact1.setArtifactId(ARTIFACT_INCLUDE_PREFIX);
+        artifact1.setVersion(STUB_ARTIFACT_VERSION);
+
+        Artifact artifact2 = new ArtifactStub();
+        artifact2.setGroupId(VALID_GROUP);
+        artifact2.setArtifactId(ARTIFACT_INCLUDE_PREFIX + "-too");
+        artifact2.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+
+        Artifact artifact3 = new ArtifactStub();
+        artifact3.setGroupId(VALID_GROUP);
+        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact3.setVersion("1.0");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
+        artifacts.add(artifact3);
+
+        assertEquals(3, artifacts.size());
+        FilterArtifacts filter = subject.getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
+        assertEquals(2, artifacts.size());
+        assertFalse(artifacts.contains(artifact3));
+        assertTrue(artifacts.contains(artifact1));
+        assertTrue(artifacts.contains(artifact2));
+    }
+
+    public void test_includeScope() throws Exception {
+        File testPom =
+                new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-scope-plugin-config.xml");
+
+        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
+        assertNotNull(subject);
+
+        Artifact artifact1 = new ArtifactStub();
+        artifact1.setGroupId(VALID_GROUP);
+        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        artifact1.setScope("provided");
+
+        Artifact artifact2 = new ArtifactStub();
+        artifact2.setGroupId(VALID_GROUP);
+        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
+        artifact2.setVersion(STUB_ARTIFACT_VERSION);
+        artifact2.setScope("system");
+
+        Artifact artifact3 = new ArtifactStub();
+        artifact3.setGroupId(VALID_GROUP);
+        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact3.setVersion(STUB_ARTIFACT_VERSION);
+        artifact3.setScope("test");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
+        artifacts.add(artifact3);
+
+        assertEquals(3, artifacts.size());
+        FilterArtifacts filter = subject.getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+        assertEquals(1, artifacts.size());
+
+        assertTrue(artifacts.contains(artifact1));
+        assertFalse(artifacts.contains(artifact2));
+        assertFalse(artifacts.contains(artifact3));
+    }
+
+    public void test_includeTypes() throws Exception {
+        File testPom =
+                new File(getBasedir(), "target/test-classes/unit/go-offline-test/include-types-plugin-config.xml");
+
+        subject = (GoOfflineMojo) lookupMojo("go-offline", testPom);
+        assertNotNull(subject);
+
+        ArtifactStub artifact1 = new ArtifactStub();
+        artifact1.setGroupId(VALID_GROUP);
+        artifact1.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact1.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        artifact1.setType("ear");
+
+        ArtifactStub artifact2 = new ArtifactStub();
+        artifact2.setGroupId(VALID_GROUP);
+        artifact2.setArtifactId(DUMMY_ARTIFACT_NAME + "-too");
+        artifact2.setVersion(STUB_ARTIFACT_VERSION);
+        artifact2.setType("pom");
+
+        ArtifactStub artifact3 = new ArtifactStub();
+        artifact3.setGroupId(VALID_GROUP);
+        artifact3.setArtifactId(DUMMY_ARTIFACT_NAME);
+        artifact3.setVersion(STUB_ARTIFACT_VERSION + "-SNAPSHOT");
+        artifact3.setType("war");
+
+        Set<Artifact> artifacts = new HashSet<>();
+        artifacts.add(artifact1);
+        artifacts.add(artifact2);
+        artifacts.add(artifact3);
+
+        assertEquals(3, artifacts.size());
+        FilterArtifacts filter = subject.getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+        assertEquals(2, artifacts.size());
+
+        assertTrue(artifacts.contains(artifact1));
+        assertTrue(artifacts.contains(artifact2));
+        assertFalse(artifacts.contains(artifact3));
+    }
 }
