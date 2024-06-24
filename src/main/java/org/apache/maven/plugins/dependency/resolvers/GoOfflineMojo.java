@@ -52,6 +52,7 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
  *
  * @author <a href="mailto:brianf@apache.org">Brian Fox</a>
  * @author Maarten Mulders
+ * @author Lisa Hardy
  * @since 2.0
  */
 @Mojo(name = "go-offline", threadSafe = true)

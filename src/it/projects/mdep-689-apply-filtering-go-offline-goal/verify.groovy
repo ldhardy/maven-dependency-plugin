@@ -23,8 +23,8 @@ assert file.exists()
 String buildLog = file.getText( "UTF-8" )
 
 // Make sure non-exluded explicit dependencies are resolved
-assert buildLog.contains( ' Resolved dependency: slf4j-simple-2.0.13.jar ' )
-assert buildLog.contains( ' Resolved dependency: slf4j-api-2.0.13.jar ' )
+assert buildLog.contains( 'Resolved dependency: slf4j-simple-2.0.13.jar' )
+assert buildLog.contains( 'Resolved dependency: slf4j-api-2.0.13.jar' )
 
 // Did group excludes work?
 assert !buildLog.contains( 'Resolving artifact skip.this.groupid' )
