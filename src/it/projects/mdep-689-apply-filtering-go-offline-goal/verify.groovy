@@ -22,19 +22,29 @@ assert file.exists()
 
 String buildLog = file.getText( "UTF-8" )
 
+// Make sure non-exluded explicit dependencies are resolved
+assert buildLog.contains( ' Resolved dependency: slf4j-simple-2.0.13.jar ' )
+assert buildLog.contains( ' Resolved dependency: slf4j-api-2.0.13.jar ' )
+
 // Did group excludes work?
 assert !buildLog.contains( 'Resolving artifact skip.this.groupid' )
-assert !buildLog.contains( 'Resolving artifact skip.this.groupid.too' )
 
 // Did artifact excludes work?
-// assert !buildLog.contains( '' )
+assert !buildLog.contains( 'Resolving artifact org.junit.jupiter:skip-this-artifact' )
 
 // Did scope exludes work?
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-classic' )
 
 // Did type excludes work?
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-examples' )
 
 // Did classifier excludes work?
-assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-core:jar:skipThisClassifier' )
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-core:jar:skipThisClassifierToo' )
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-core' )
+
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-access:jar:skipThisClassifier' )
+assert !buildLog.contains( 'Resolving artifact ch.qos.logback:logback-access' )
+
 
 
 return true

@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -88,9 +90,12 @@ public class GoOfflineMojo extends AbstractResolveMojo {
      *
      * @return set of resolved dependency artifacts.
      * @throws DependencyResolverException in case of an error while resolving the artifacts.
+     * @throws ArtifactFilterException
      */
-    protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException {
+    protected Set<Artifact> resolveDependencyArtifacts() throws DependencyResolverException, ArtifactFilterException {
         Collection<Dependency> dependencies = getProject().getDependencies();
+
+        dependencies = filterDependencies(dependencies);
 
         Set<DependableCoordinate> dependableCoordinates = dependencies.stream()
                 .map(this::createDependendableCoordinateFromDependency)
@@ -151,12 +156,8 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         artifacts.addAll(reports);
         artifacts.addAll(plugins);
 
-        getLog().debug("Size of artifacts before filtering " + artifacts.size());
-
         final FilterArtifacts filter = getArtifactsFilter();
         artifacts = filter.filter(artifacts);
-
-        getLog().debug("Size of artifacts after filtering " + artifacts.size());
 
         Set<DependableCoordinate> dependableCoordinates = artifacts.stream()
                 .map(this::createDependendableCoordinateFromArtifact)
@@ -171,7 +172,6 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         final FilterArtifacts filter = new FilterArtifacts();
 
         if (excludeReactor) {
-
             filter.addFilter(new ExcludeReactorProjectsArtifactFilter(reactorProjects, getLog()));
         }
 
@@ -198,6 +198,16 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         return filter;
     }
 
+    private Collection<Dependency> filterDependencies(Collection<Dependency> deps) throws ArtifactFilterException {
+
+        Set<Artifact> artifacts = createArtifactSetFromDependencies(deps);
+
+        final FilterArtifacts filter = getArtifactsFilter();
+        artifacts = filter.filter(artifacts);
+
+        return createDependencySetFromArtifacts(artifacts);
+    }
+
     private DependableCoordinate createDependendableCoordinateFromArtifact(final Artifact artifact) {
         final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
         result.setGroupId(artifact.getGroupId());
@@ -218,6 +228,39 @@ public class GoOfflineMojo extends AbstractResolveMojo {
         result.setClassifier(dependency.getClassifier());
 
         return result;
+    }
+
+    private Set<Artifact> createArtifactSetFromDependencies(Collection<Dependency> deps) {
+        Set<Artifact> artifacts = new HashSet<>();
+        for (Dependency dep : deps) {
+            DefaultArtifactHandler handler = new DefaultArtifactHandler(dep.getType());
+            artifacts.add(new DefaultArtifact(
+                    dep.getGroupId(),
+                    dep.getArtifactId(),
+                    dep.getVersion(),
+                    dep.getScope(),
+                    dep.getType(),
+                    dep.getClassifier(),
+                    handler));
+        }
+        return artifacts;
+    }
+
+    private Collection<Dependency> createDependencySetFromArtifacts(Set<Artifact> artifacts) {
+        Set<Dependency> dependencies = new HashSet<>();
+
+        for (Artifact artifact : artifacts) {
+            Dependency d = new Dependency();
+            d.setGroupId(artifact.getGroupId());
+            d.setArtifactId(artifact.getArtifactId());
+            d.setVersion(artifact.getVersion());
+            d.setType(artifact.getType());
+            d.setClassifier(artifact.getClassifier());
+            d.setScope(artifact.getScope());
+            dependencies.add(d);
+        }
+
+        return dependencies;
     }
 
     @Override

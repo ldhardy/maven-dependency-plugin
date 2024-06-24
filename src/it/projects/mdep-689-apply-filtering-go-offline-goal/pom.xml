@@ -28,57 +28,58 @@ under the License.
 	<version>1.0.0-SNAPSHOT</version>
 	<description>Test that dependency:go-offline applies exclude filters</description>
 	<dependencies>
-		<dependency>
+		<dependency> <!-- excluded by excludeGroupId -->
 			<groupId>skip.this.groupid</groupId>
 			<artifactId>dummy-artifact</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeGroupId -->
 			<groupId>skip.this.groupid.too</groupId>
 			<artifactId>dummy-artifact</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeArtifactId -->
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>skip-this-artifact</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeArtifactId -->
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>skip-this-artifact-too</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeClassifier -->
 			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>1.5.6</version>
+			<artifactId>logback-access</artifactId>
+			<version>1.4.7</version>
 			<classifier>skipThisClassifier</classifier>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeClassifier -->
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 			<version>1.5.6</version>
 			<classifier>skipThisClassifierToo</classifier>
 		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.5.6</version>
+		<dependency><!-- should not be excluded -->
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.13</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeScope -->
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.5.4</version>
 			<scope>system</scope>
-			<systemPath>/tmp/blue.jar</systemPath>
+			<!-- it doesn't matter what jar this points to, needs a systemPath to compile -->
+			<systemPath>${project.build.directory}/local-repo/junit/junit/4.13.2/junit-4.13.2.jar</systemPath>
 		</dependency>
-		<dependency>
+		<dependency><!-- should not be excluded -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>2.0.13</version>
 		</dependency>
-		<dependency>
+		<dependency> <!-- excluded by excludeType -->
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-examples</artifactId>
 			<version>1.4.7</version>

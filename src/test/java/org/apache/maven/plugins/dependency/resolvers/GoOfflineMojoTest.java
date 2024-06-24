@@ -202,7 +202,8 @@ public class GoOfflineMojoTest extends AbstractDependencyMojoTestCase {
 
     /**
      * Can't set a classifier on the ArtifactStub as of maven-plugin-testing-harness-3.3.0, there is a getter but no
-     * setter. If that ever gets implemented, comment in these two lines to support unit testing for this case
+     * setter. If that ever gets implemented, comment in these two lines to support unit testing for this case, rename
+     * xtest to test and remove the Junit 5 Disabled annotation
      *
      * @throws Exception
      */
